@@ -38,7 +38,7 @@ def main():
     # No axes, for prettiness
     ax.set_axis_off()
     # Set background to black
-#    ax.set_facecolor((0.0, 0.0, 0.0))
+    ax.set_facecolor((0.0, 0.0, 0.0))
     # Pop up the window with the result
 
 #       for angle in range(0, 360):
@@ -47,16 +47,16 @@ def main():
 #           plt.pause(.01)
 
     k=1
-    my_plot = ax.scatter(x[:k], y[:k], z[:k], color='C0')
+    my_plot = ax.scatter(x, y, z, color='C0')
     def update(k):
        # Make it spin
        ax.view_init(30.0, -45.0 + k)
        # Animation info whilst generating
-       ax.scatter(x,y,z, s=1)
+       ax.scatter(x,y,z, s=1, color='C0')
        label = 'timestep {0}'.format(k)
        print(label)
        return my_plot, ax
-    anim = FuncAnimation(fig, update, frames=np.arange(0, 360))
+    anim = FuncAnimation(fig, update, frames=np.arange(0, 60))
     anim.save('test.gif',
                dpi=40, 
                writer='imagemagick')
