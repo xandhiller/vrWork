@@ -39,32 +39,28 @@ def main():
     col = df['DISC_DATE']
     # Position of our sun
     sun = [0, 8.5, 0]
+#    ax.scatter(x,y,z, s=0.5, c=df.DISC_DATE, zorder=1)
 
-    ax.scatter(x,y,z, s=0.5, c=df.DISC_DATE, zorder=1)
+    # Get array of years
+    years = []
+    for i,el in enumerate(df.DISC_DATE):
+        if el not in years:
+            years.append(el)
+    years.sort()
 
-#       # Get array of years
-#       years = []
-#       for i,el in enumerate(df.DISC_DATE):
-#           if el not in years:
-#               years.append(el)
-#       years.sort()
-#       # Plot each series of years 
-#       for year in years:
-#           _x,_y,_z = [],[],[]
-#           _df = df[df.DISC_DATE == year]
-#           _x = _df['XX']
-#           _y = _df['YY']
-#           _z = _df['ZZ']
-#           if len(x) != len(y) != len(z):   
-#               print(year, '\n', 
-#                     'len _x: ', len(_x), 
-#                     'len _y: ', len(_y), 
-#                     'len _z: ', len(_z))
-#           try: 
-#               ax.scatter(_x, _y, _z, c=year, s=0.5) 
-#           except:
-#               pass
+    for year in years:
+        print(year)
 
+    # Plot each series of years 
+    for year in years:
+        _x,_y,_z = [],[],[]
+        _df = df[df.DISC_DATE == year]
+        _x = list(_df['XX'].values)
+        _y = list(_df['YY'].values)
+        _z = list(_df['ZZ'].values)
+        ax.scatter(_x, _y, _z, label=year, s=0.5) 
+
+    ax.legend()
                    
     ax.scatter(sun[0], sun[1], sun[2], 
            s=500, marker='o', zorder=2, edgecolors='r', alpha=0.5,
@@ -76,12 +72,12 @@ def main():
         k=1 # Used for animation, moves angle incrementally.
         def _update(k):
             # Make it spin
-            ax.view_init(30.0 - k, 45.0 + k)  # (Φ,θ)
+            ax.view_init(30.0 , 45.0 + k)  # (Φ,θ)
             # Animation info whilst generating
             label = 'timestep {0}'.format(k)
             print(label)
             return my_plot, ax
-        anim = FuncAnimation(fig, _update, frames=np.arange(0, 360))
+        anim = FuncAnimation(fig, _update, frames=np.arange(0, 10))
         anim.save(saveGifAs,
                   dpi=300,
                   writer='imagemagick')
