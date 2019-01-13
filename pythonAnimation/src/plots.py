@@ -2,7 +2,7 @@
 # 
 # Author: Alex Hiller
 # Year: 2019
-# Program Description: Generate plots from `pulsarCatalogue.txt`
+# Program Description: Generate plots from `pulsarCatalogue.csv`
 # 
 ################################################################################ 
 # Libraries
@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 import numpy as np
+from math import ceil
 
 
 dataSource = './src/pulsarCatalogue.csv'
@@ -51,14 +52,30 @@ def main():
     for year in years:
         print(year)
 
+    year_increment = 20
+
+    bottom = min(years)
+    upper = min(years) + year_increment 
+    top = max(years)
+    intervals = ceil(len(years)/year_increment )
     # Plot each series of years 
-    for year in years:
+    for interval in range(intervals):
         _x,_y,_z = [],[],[]
-        _df = df[df.DISC_DATE == year]
+        _df = df[df.DISC_DATE <= upper]
+        _df = _df[_df.DISC_DATE >= bottom]
         _x = list(_df['XX'].values)
         _y = list(_df['YY'].values)
         _z = list(_df['ZZ'].values)
-        ax.scatter(_x, _y, _z, label=year, s=0.5) 
+        _label = str(bottom) + ' - ' + str(upper)
+        ax.scatter(_x, _y, _z, label=_label, s=0.5, alpha=0.5) 
+
+        # Update year interval
+        bottom += year_increment  
+        if upper + year_increment  < top:
+            upper += year_increment 
+        else:
+            upper = top
+            
 
     ax.legend()
                    
@@ -77,7 +94,7 @@ def main():
             label = 'timestep {0}'.format(k)
             print(label)
             return my_plot, ax
-        anim = FuncAnimation(fig, _update, frames=np.arange(0, 10))
+        anim = FuncAnimation(fig, _update, frames=np.arange(0, 360))
         anim.save(saveGifAs,
                   dpi=300,
                   writer='imagemagick')
@@ -85,7 +102,8 @@ def main():
 
     # What to actually run
     ############################################################################ 
-    _animate() # Create GIF
+    plt.show()
+#    _animate() # Create GIF
     os.system('sxiv -af ' + saveGifAs) # Open with local program
     ############################################################################ 
 
