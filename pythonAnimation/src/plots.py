@@ -15,97 +15,86 @@ import numpy as np
 from math import ceil
 
 
-dataSource = './src/pulsarCatalogue.csv'
-saveGifAs = 'run.gif'
 
-
-def main():
-    # Ploting setup
-    fig = plt.figure(facecolor='k', edgecolor='k')
-    # For no border
-    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, 
+class pulsarPlot:
+    def __init__(self):
+        self.dataSource = './src/pulsarCatalogue.csv'
+        self.filename = 'run.gif'
+        self.df     = pd.read_csv(self.dataSource) 
+        self.x      = self.df['XX']
+        self.y      = self.df['YY']
+        self.z      = self.df['ZZ']
+        self.date   = self.df['DISC_DATE']
+        self.sun    = [0, 8.5, 0]
+        self.years  = self.getYears()
+        self.fig    = plt.figure(facecolor='k', edgecolor='k')
+        self.ax     = self.fig.add_subplot(111, projection='3d')
+        self.ax.set_axis_off()
+        self.ax.set_facecolor((0.0, 0.0, 0.0))
+        self.year_increment = 20
+        self.nbFrames = np.arange(0, 10)
+        self.plotOurSun = True
+        self.show = True
+        self.fig.subplots_adjust(left=0, bottom=0, right=1, top=1, 
                         wspace=None, hspace=None)
-    #fig.set_tight_layout(True) # [Causing ERRORS]
-    ax = fig.add_subplot(111, projection='3d')
-    # No axes, for prettiness
-    ax.set_axis_off()
-    # Set background to black
-    ax.set_facecolor((0.0, 0.0, 0.0))
-    # Read in data
-    df = pd.read_csv(dataSource) 
-    # Pull position from dataframe
-    x   = df['XX']
-    y   = df['YY']
-    z   = df['ZZ']
-    col = df['DISC_DATE']
-    # Position of our sun
-    sun = [0, 8.5, 0]
-#    ax.scatter(x,y,z, s=0.5, c=df.DISC_DATE, zorder=1)
 
-    # Get array of years
-    years = []
-    for i,el in enumerate(df.DISC_DATE):
-        if el not in years:
-            years.append(el)
-    years.sort()
+    def getYears(self):
+        years = []
+        for i,el in enumerate(self.df.DISC_DATE):
+            if el not in years:
+                years.append(el)
+        years.sort()
+        return years
 
-    for year in years:
-        print(year)
+    def plotYears(self):
+        bottom = min(self.years)
+        upper = min(self.years) + self.year_increment 
+        top = max(self.years)
+        intervals = ceil(len(self.years)/self.year_increment)
+        # Plot each series of years 
+        for interval in range(intervals):
+            _x,_y,_z = [],[],[]
+            _df = self.df[self.df.DISC_DATE <= upper]
+            _df = _df[_df.DISC_DATE >= bottom]
+            _x = list(_df['XX'].values)
+            _y = list(_df['YY'].values)
+            _z = list(_df['ZZ'].values)
+            _label = str(bottom) + ' - ' + str(upper)         
+            self.ax.scatter(_x, _y, _z, label=_label, s=0.5, alpha=0.5)  
+            # Update year interval
+            bottom += self.year_increment  
+            if upper + self.year_increment  < top:
+                upper += self.year_increment 
+            else:
+                upper = top
+        if self.plotOurSun == True:
+            self.ax.scatter(self.sun[0], self.sun[1], self.sun[2], 
+                   s=500, marker='o', zorder=2, edgecolors='r', alpha=0.5,
+                   c='orange', linewidths=0.5, label='You are here.')
+        self.ax.legend()
 
-    year_increment = 20
-
-    bottom = min(years)
-    upper = min(years) + year_increment 
-    top = max(years)
-    intervals = ceil(len(years)/year_increment )
-    # Plot each series of years 
-    for interval in range(intervals):
-        _x,_y,_z = [],[],[]
-        _df = df[df.DISC_DATE <= upper]
-        _df = _df[_df.DISC_DATE >= bottom]
-        _x = list(_df['XX'].values)
-        _y = list(_df['YY'].values)
-        _z = list(_df['ZZ'].values)
-        _label = str(bottom) + ' - ' + str(upper)
-        ax.scatter(_x, _y, _z, label=_label, s=0.5, alpha=0.5) 
-
-        # Update year interval
-        bottom += year_increment  
-        if upper + year_increment  < top:
-            upper += year_increment 
-        else:
-            upper = top
-            
-
-    ax.legend()
-                   
-    ax.scatter(sun[0], sun[1], sun[2], 
-           s=500, marker='o', zorder=2, edgecolors='r', alpha=0.5,
-           c='orange', linewidths=0.5, label='You are here.')
-    # Plot data with small points
-    my_plot = ax
-
-    def _animate():
-        k=1 # Used for animation, moves angle incrementally.
+    def animate(self):
+        my_plot = self.ax
+        k=1 # Variable used for animation, moves angle incrementally.
         def _update(k):
             # Make it spin
-            ax.view_init(30.0 , 45.0 + k)  # (Φ,θ)
+            self.ax.view_init(30.0 , 45.0 + k)  # (Φ,θ)
             # Animation info whilst generating
             label = 'timestep {0}'.format(k)
             print(label)
-            return my_plot, ax
-        anim = FuncAnimation(fig, _update, frames=np.arange(0, 360))
-        anim.save(saveGifAs,
+            return my_plot, self.ax
+        anim = FuncAnimation(self.fig, _update, frames=self.nbFrames)
+        anim.save(self.filename,
                   dpi=300,
                   writer='imagemagick')
-                    
 
-    # What to actually run
-    ############################################################################ 
-    plt.show()
-#    _animate() # Create GIF
-    os.system('sxiv -af ' + saveGifAs) # Open with local program
-    ############################################################################ 
+
+def main():
+    colorPlot = pulsarPlot()
+    colorPlot.plotYears()
+    colorPlot.animate()
+    os.system('sxiv -af ' + colorPlot.filename) # Open with local program
+
 
 if __name__ == '__main__':
     main()
