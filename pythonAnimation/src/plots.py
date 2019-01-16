@@ -18,6 +18,7 @@ from math import ceil
 
 class pulsarPlot:
     def __init__(self):
+        # All variables used to tune the plots
         self.dataSource = './src/pulsarCatalogue.csv'
         self.filename = 'run.gif'
         self.df     = pd.read_csv(self.dataSource) 
@@ -38,6 +39,7 @@ class pulsarPlot:
         self.fig.subplots_adjust(left=0, bottom=0, right=1, top=1, 
                         wspace=None, hspace=None)
 
+    # Generate a list of years to use as an x-axis variable.
     def getYears(self):
         years = []
         for i,el in enumerate(self.df.DISC_DATE):
@@ -46,7 +48,9 @@ class pulsarPlot:
         years.sort()
         return years
 
+    # Plot (with colour) the years of discovery of pulsars
     def plotYears(self):
+        # Arithmetic for generating year intervals
         bottom = min(self.years)
         upper = min(self.years) + self.year_increment 
         top = max(self.years)
@@ -54,12 +58,16 @@ class pulsarPlot:
         # Plot each series of years 
         for interval in range(intervals):
             _x,_y,_z = [],[],[]
+            # Truncate year values
             _df = self.df[self.df.DISC_DATE <= upper]
             _df = _df[_df.DISC_DATE >= bottom]
+            # Format df for plotting
             _x = list(_df['XX'].values)
             _y = list(_df['YY'].values)
             _z = list(_df['ZZ'].values)
+            # Generate label for legend
             _label = str(bottom) + ' - ' + str(upper)         
+            # Actually plot it.
             self.ax.scatter(_x, _y, _z, label=_label, s=0.5, alpha=0.5)  
             # Update year interval
             bottom += self.year_increment  
@@ -71,9 +79,10 @@ class pulsarPlot:
             self.ax.scatter(self.sun[0], self.sun[1], self.sun[2], 
                    s=500, marker='o', zorder=2, edgecolors='r', alpha=0.5,
                    c='orange', linewidths=0.5, label='You are here.')
+        # Show the legend
         self.ax.legend()
 
-    def animate(self):
+    def animateSpin(self):
         my_plot = self.ax
         k=1 # Variable used for animation, moves angle incrementally.
         def _update(k):
@@ -90,10 +99,14 @@ class pulsarPlot:
 
 
 def main():
+    # Initialise
     colorPlot = pulsarPlot()
+    # Change colour of plot with years
     colorPlot.plotYears()
-    colorPlot.animate()
-    os.system('sxiv -af ' + colorPlot.filename) # Open with local program
+    # Simple animated spin of the plot
+    colorPlot.animateSpin()
+    # Opens the gif after saving with local program
+    os.system('sxiv -af ' + colorPlot.filename) 
 
 
 if __name__ == '__main__':
