@@ -5,6 +5,7 @@
 # Program Description: Generate plots from `pulsarCatalogue.csv`
 # 
 ################################################################################ 
+
 # Libraries
 import os
 import pandas as pd
@@ -15,12 +16,11 @@ import numpy as np
 from math import ceil
 
 
-
 class pulsarPlot:
     def __init__(self):
         # All variables used to tune the plots
         self.dataSource = './src/newPulsarCatalogue.csv'
-        self.filename   = 'run.gif'
+        self.filename   = 'run.mp4'
         self.df         = pd.read_csv(self.dataSource) 
         self.x          = self.df['XX']
         self.y          = self.df['YY']
@@ -32,15 +32,16 @@ class pulsarPlot:
         self.fig        = plt.figure(facecolor='k', edgecolor='k')
         self.ax         = self.fig.add_subplot(111, projection='3d')
         self.plotOurSun = True
-        self.show       = True
-        self.magellanic = True
-        self.cloudOne   = [-7.69,-19.0,-31]
-        self.cloudTwo   = [-41,25,-34]
+        self.show       = False
+        self.magellanic = False
+        self.drawLegend = False
+        self.cloudOne   = [-55,-4.0,-25]
+        self.cloudTwo   = [0,0,0]
         self.datapSize = 0.5
         self.ax.set_axis_off()
         self.ax.set_facecolor((0.0, 0.0, 0.0))
         self.year_increment = 20
-        self.nbFrames = np.arange(0, 10)
+        self.nbFrames = np.arange(0, 360)
         self.fig.subplots_adjust(left=0, bottom=0, right=1, top=1, 
                         wspace=None, hspace=None)
 
@@ -97,11 +98,13 @@ class pulsarPlot:
                 upper += self.year_increment 
             else:
                 upper = top
+        # Circle around the area where our sun is located
         if self.plotOurSun == True:
             self.ax.scatter(self.sun[0], self.sun[1], self.sun[2], 
                            s=300, marker='o', zorder=2, edgecolors='r', 
                            alpha=0.5, c='orange', linewidths=0.5, 
                            label='You are here.')
+        # Lines from sun to magellanic clouds
         if self.magellanic == True:
             c1 = self.cloudOne
             c2 = self.cloudTwo
@@ -116,10 +119,12 @@ class pulsarPlot:
             self.ax.plot(x1,y1,z1, color='white', alpha=0.3)
             # cloud 2 
             self.ax.plot(x2,y2,z2, color='white', alpha=0.3)
-            # self.ax.plot(
-        # Show the legend
-        self.ax.legend()
-        plt.show()
+        if self.drawLegend == True:
+            # Show the legend
+            self.ax.legend()
+        if self.show == True:
+            # Show plot in plt viewer
+            plt.show()
 
     def animateSpin(self):
         my_plot = self.ax
@@ -143,9 +148,7 @@ def main():
     # Change colour of plot with years
     colorPlot.plotYears()
     # Simple animated spin of the plot
-    #colorPlot.animateSpin()
-    # Opens the gif after saving with local program
-    os.system('sxiv -af ' + colorPlot.filename) 
+    colorPlot.animateSpin()
 
 
 if __name__ == '__main__':
